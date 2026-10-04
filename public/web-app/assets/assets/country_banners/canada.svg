@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 294 136.7">
+  <defs>
+    <clipPath id="clippath">
+      <path d="m147,31.9h0c20.1,0,36.4,16.3,36.4,36.4h0c0,20.1-16.3,36.4-36.4,36.4h0c-20.1,0-36.4-16.3-36.4-36.4h0c0-20.1,16.3-36.4,36.4-36.4Z" fill="none" stroke-width="0"/>
+    </clipPath>
+    <clipPath id="clippath-1">
+      <rect x="78.6" width="136.7" height="136.7" fill="none" stroke-width="0"/>
+    </clipPath>
+    <mask id="mask" x="80.3" y="1.5" width="132.9" height="132.9" maskUnits="userSpaceOnUse">
+      <g id="mask0_124_458" data-name="mask0 124 458">
+        <path d="m213.2,1.5H80.3v132.9h132.9V1.5Z" fill="#fff" stroke-width="0"/>
+      </g>
+    </mask>
+  </defs>
+  <rect x="95.2" y="12.5" width="103.7" height="111.8" fill="#f1f0f0" stroke-width="0"/>
+  <rect y="12.5" width="95.2" height="111.8" fill="#d81f2a" stroke-width="0"/>
+  <path d="m198.8,12.5v111.8h95.1v-37h0V12.5h-95.2Z" fill="#d81f2a" stroke-width="0"/>
+  <g clip-path="url(#clippath)">
+    <g clip-path="url(#clippath-1)">
+      <g mask="url(#mask)">
+        <g>
+          <path d="m146.8,134.4c36.7,0,66.5-29.8,66.5-66.5S183.5,1.5,146.8,1.5s-66.5,29.8-66.5,66.5,29.8,66.5,66.5,66.5Z" fill="none" stroke-width="0"/>
+          <path d="m158.3,76.6l11.6-5.8-5.8-2.9v-5.8l-11.6,5.8,5.8-11.6h-5.8l-5.8-8.7-5.8,8.7h-5.8l5.8,11.6-11.6-5.8v5.8l-5.8,2.9,11.6,5.8-2.9,5.8h11.6v8.7h5.8v-8.7h11.6l-2.9-5.8Z" fill="#d81f2a" stroke-width="0"/>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

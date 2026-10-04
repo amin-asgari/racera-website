@@ -105,8 +105,9 @@ function Header() {
         <Image src="/brand/racera.svg" width={148} height={31} alt="Racera" priority />
       </a>
       <nav aria-label="Primary navigation">
-        <a href="#features">Features</a>
         <a href="#series">Series</a>
+        <a href="#features">Features</a>
+        <a href="#web-app">Web App</a>
         <a href="#widgets">Widgets</a>
         <a href="#roadmap">Roadmap</a>
       </nav>
@@ -355,6 +356,46 @@ function Notifications() {
   );
 }
 
+function WebAppSection() {
+  return (
+    <section className="web-app-section section-shell" id="web-app">
+      <div className="web-app-copy reveal-section">
+        <p className="eyebrow"><span /> Racera on every screen</p>
+        <h2>The full app.<br /><em>No App Store required.</em></h2>
+        <p>
+          Open Racera in Safari, Chrome, or Edge and add it to your Home Screen.
+          You get the same calendars, results, standings, profiles, voting, and
+          session reminders in a fast installable web app.
+        </p>
+        <div className="web-app-actions">
+          <a className="button button-primary" href="/web-app/?install=1">
+            <DownloadIcon /> Open the Web App
+          </a>
+          <span>Works on iPhone, iPad, Android, tablet, and desktop.</span>
+        </div>
+      </div>
+      <div className="web-app-visual reveal-grid" aria-label="Racera Web App capabilities">
+        <article className="web-app-panel web-app-panel-main">
+          <span className="web-app-kicker">INSTALLABLE PWA</span>
+          <Image src="/brand/app-icon.png" alt="Racera Web App icon" width={96} height={96} />
+          <strong>Racera</strong>
+          <small>One tap from your Home Screen</small>
+        </article>
+        <article className="web-app-panel web-app-panel-notify">
+          <BellIcon />
+          <span>SESSION ALERT</span>
+          <strong>Qualifying in 15 min</strong>
+        </article>
+        <article className="web-app-panel web-app-panel-data">
+          <ChartIcon />
+          <span>LIVE DATA</span>
+          <strong>Calendar · Results · Standings</strong>
+        </article>
+      </div>
+    </section>
+  );
+}
+
 function Roadmap() {
   return (
     <section className="roadmap section-shell" id="roadmap">
@@ -413,21 +454,21 @@ function DownloadSection() {
         <Image src="/brand/app-icon.png" alt="Racera app icon" width={112} height={112} className="download-icon" />
         <p className="eyebrow"><span /> MVP access</p>
         <h2>The grid is ready.<br /><em>Are you?</em></h2>
-        <p>Racera is available here first as a direct download for Android and iOS.</p>
+        <p>Download Racera directly for Android, or launch the installable Web App on iPhone and iPad.</p>
         <div className="download-actions">
           <a className="store-button" href="/download/android" aria-describedby="latest-release-note">
             <DownloadIcon />
             <span><small>Download for</small>Android</span>
             <b>DIRECT</b>
           </a>
-          <a className="store-button" href="/download/ios" aria-describedby="latest-release-note ios-note">
+          <a className="store-button" href="/web-app/?install=1" aria-describedby="latest-release-note ios-note">
             <DownloadIcon />
-            <span><small>Download for</small>iOS</span>
-            <b>DIRECT</b>
+            <span><small>Use on iPhone &amp; iPad</small>iOS</span>
+            <b>WEB APP</b>
           </a>
         </div>
-        <p className="download-note" id="latest-release-note">Both buttons always download the latest published Racera release.</p>
-        <span className="sr-only" id="ios-note">The iOS download requires signing or sideloading after download.</span>
+        <p className="download-note" id="latest-release-note">Android always downloads the latest release. The Web App always opens the newest deployed version.</p>
+        <span className="sr-only" id="ios-note">On iPhone or iPad, follow the Safari instructions to add Racera to the Home Screen.</span>
       </div>
     </section>
   );
@@ -470,6 +511,7 @@ export default function Home() {
         <Hero />
         <SeriesStrip />
         <FeatureSections />
+        <WebAppSection />
         <Widgets />
         <Notifications />
         <Roadmap />
