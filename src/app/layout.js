@@ -4,7 +4,6 @@ import "./globals.css";
 const formula = localFont({
   src: [
     { path: "./fonts/Formula1-Regular.ttf", weight: "400", style: "normal" },
-    { path: "./fonts/Formula1-Italic.ttf", weight: "400", style: "italic" },
     { path: "./fonts/Formula1-Bold.ttf", weight: "700", style: "normal" },
     { path: "./fonts/Formula1-Black.ttf", weight: "900", style: "normal" },
   ],
@@ -12,15 +11,21 @@ const formula = localFont({
   display: "swap",
 });
 
-const formulaWide = localFont({
-  src: "./fonts/Formula1-Wide.ttf",
-  variable: "--font-formula-wide",
-  display: "swap",
-});
-
 const northwell = localFont({
   src: "./fonts/Northwell-Alt.otf",
   variable: "--font-northwell",
+  display: "swap",
+});
+
+const titillium = localFont({
+  src: [
+    { path: "./fonts/Titillium-Light.otf", weight: "300", style: "normal" },
+    { path: "./fonts/Titillium-Regular.otf", weight: "400", style: "normal" },
+    { path: "./fonts/Titillium-Semibold.otf", weight: "600", style: "normal" },
+    { path: "./fonts/Titillium-Bold.otf", weight: "700", style: "normal" },
+    { path: "./fonts/Titillium-Black.otf", weight: "900", style: "normal" },
+  ],
+  variable: "--font-titillium",
   display: "swap",
 });
 
@@ -59,7 +64,7 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
-      className={`${formula.variable} ${formulaWide.variable} ${northwell.variable}`}
+      className={`${formula.variable} ${northwell.variable} ${titillium.variable}`}
     >
       <body>{children}</body>
     </html>

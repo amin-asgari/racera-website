@@ -18,6 +18,7 @@ const mimeTypes = {
   ".svg": "image/svg+xml",
   ".ttf": "font/ttf",
   ".wasm": "application/wasm",
+  ".webmanifest": "application/manifest+json; charset=utf-8",
   ".webp": "image/webp",
   ".woff": "font/woff",
   ".woff2": "font/woff2",

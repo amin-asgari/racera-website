@@ -8,20 +8,27 @@
     "build": "next build",
     "start": "next start",
     "preview:static": "node scripts/serve-static.mjs",
+    "optimize:assets": "node scripts/optimize-app-assets.mjs",
     "lint": "eslint",
     "downloads:configure": "node scripts/configure-downloads.mjs"
   },
   "dependencies": {
+    "@amplitude/analytics-browser": "^2.47.2",
     "@gsap/react": "^2.1.2",
     "gsap": "^3.15.0",
     "next": "16.3.6",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "sharp": "^0.35.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/node": "^26.6.4",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "eslint": "^9",
     "eslint-config-next": "16.3.6",
-    "tailwindcss": "^4"
+    "tailwindcss": "^4",
+    "typescript": "^6.0.2"
   }
 }

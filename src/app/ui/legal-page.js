@@ -14,7 +14,7 @@ const legalContent = {
         title: "Information we process",
         paragraphs: [
           "Racera does not require an account. The app may process technical details such as platform, browser or operating-system version, device model, language, approximate region derived from an IP address, time zone, app version, session duration, and feature interactions.",
-          "Your selected series, theme, intro status, notification choices, and cached motorsport data are stored locally on your device or browser. When you vote for a future racing series, Racera sends an anonymous installation identifier, your choices, and limited device metadata to the voting service to prevent duplicate votes.",
+          "Your selected series, theme, notification choices, and cached motorsport data are stored locally on your device or browser. When you vote for a future racing series, Racera sends an anonymous installation identifier, your choices, and limited device metadata to the voting service to prevent duplicate votes.",
         ],
       },
       {

@@ -1,6 +1,6 @@
-# Racera website
+# Racera website and Next.js web app
 
-The official marketing website for Racera, a motorsport calendar, results, standings, profile, notification, and widget companion.
+The official marketing website and lightweight Next.js PWA for Racera. The web app lives at `/web-app/` and includes the Formula 1 calendar, results, standings, driver/team/circuit profiles, voting, install support, and web-push reminders.
 
 ## Run locally
 
@@ -10,6 +10,8 @@ pnpm dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
+
+Open the web app at [http://localhost:3000/web-app/](http://localhost:3000/web-app/).
 
 ## Production checks
 
@@ -35,7 +37,7 @@ pnpm downloads:configure YOUR_GITHUB_USERNAME/racera-releases
 
 Every published release must contain assets named exactly `Racera-Android.apk` and `Racera-iOS.ipa`. GitHub's `/releases/latest/download/...` URL then follows the newest non-prerelease automatically, so later app updates do not require a website rebuild.
 
-See [`CLOUDFLARE-DEPLOY.md`](./CLOUDFLARE-DEPLOY.md) for the deployment and update workflow.
+For the complete Cloudflare Pages workflow, web-app environment variables, VAPID setup, asset optimization, and migration from Flutter Web, see [`DEPLOYMENT-FA.md`](./DEPLOYMENT-FA.md).
 
 ## Before launch
 

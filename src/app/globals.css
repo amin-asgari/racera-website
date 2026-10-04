@@ -314,7 +314,7 @@ svg {
 .download-content h2 em {
   color: var(--red);
   font-family: var(--font-formula), sans-serif;
-  font-style: italic;
+  font-style: normal;
   font-weight: 400;
   letter-spacing: -0.012em;
 }
@@ -404,7 +404,7 @@ svg {
 }
 
 .hero-meta strong {
-  font-family: var(--font-formula-wide), sans-serif;
+  font-family: var(--font-formula), sans-serif;
   font-size: 22px;
   font-weight: 400;
 }
@@ -560,7 +560,7 @@ svg {
   border-radius: 7px;
   background: var(--red);
   color: #fff;
-  font-family: var(--font-formula-wide), sans-serif;
+  font-family: var(--font-formula), sans-serif;
   font-size: 11px;
 }
 
@@ -805,7 +805,7 @@ svg {
   display: block;
   margin-bottom: 70px;
   color: currentColor;
-  font-family: var(--font-formula-wide), sans-serif;
+  font-family: var(--font-formula), sans-serif;
   font-size: 13px;
   letter-spacing: 0.12em;
 }
@@ -826,7 +826,7 @@ svg {
 
 .feature-copy h3 span:last-child {
   color: currentColor;
-  font-style: italic;
+  font-style: normal;
   font-weight: 400;
   letter-spacing: -0.01em;
 }
@@ -970,7 +970,7 @@ svg {
 
 .widget-count strong {
   color: var(--red);
-  font-family: var(--font-formula-wide), sans-serif;
+  font-family: var(--font-formula), sans-serif;
   font-size: 58px;
   font-weight: 400;
   line-height: 1;
@@ -1113,7 +1113,7 @@ svg {
 
 .widget-catalog li span {
   color: var(--red);
-  font-family: var(--font-formula-wide), sans-serif;
+  font-family: var(--font-formula), sans-serif;
   font-size: 9px;
 }
 
@@ -1230,7 +1230,7 @@ svg {
 .roadmap-index {
   align-self: flex-end;
   color: #66626c;
-  font-family: var(--font-formula-wide), sans-serif;
+  font-family: var(--font-formula), sans-serif;
   font-size: 12px;
 }
 
@@ -1546,7 +1546,7 @@ svg {
 .web-app-copy h2 em {
   color: var(--red);
   font-family: var(--font-formula), sans-serif;
-  font-style: italic;
+  font-style: normal;
   font-weight: 400;
   letter-spacing: 0.015em;
 }
