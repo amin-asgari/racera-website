@@ -37,6 +37,9 @@ export const metadata = {
   },
   description:
     "Race calendars, live session timing, standings, driver and team profiles, notifications, and home-screen widgets — built for motorsport fans.",
+  alternates: {
+    canonical: "/",
+  },
   keywords: [
     "Racera",
     "motorsport",
@@ -51,12 +54,31 @@ export const metadata = {
       "The race weekend, the standings, and every session — all in one focused companion.",
     type: "website",
     siteName: "Racera",
+    url: "/",
+    locale: "en_US",
+    images: [
+      {
+        url: "/assets/open-graph/OpenGraph_main.png",
+        width: 1200,
+        height: 630,
+        alt: "Racera — Motorsport, in motion",
+        type: "image/png",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Racera — Motorsport, in motion",
     description:
       "The race weekend, the standings, and every session — all in one focused companion.",
+    images: [
+      {
+        url: "/assets/open-graph/OpenGraph_main.png",
+        width: 1200,
+        height: 630,
+        alt: "Racera — Motorsport, in motion",
+      },
+    ],
   },
 };
 

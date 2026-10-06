@@ -1,4 +1,7 @@
-const CACHE_VERSION = "racera-next-v2";
+const CACHE_PREFIX = "racera-next-";
+// Bump this value whenever a deployed asset changes without changing its URL.
+const CACHE_VERSION = "v3";
+const CACHE_NAME = `${CACHE_PREFIX}${CACHE_VERSION}`;
 const APP_SHELL = [
   "/web-app/",
   "/web-app/manifest.webmanifest",
@@ -7,17 +10,57 @@ const APP_SHELL = [
   "/web-app/icons/icon-512.png",
   "/web-app/icons/apple-touch-icon.png",
 ];
+const STATIC_PATH_PREFIXES = [
+  "/_next/static/",
+  "/assets/",
+  "/brand/",
+  "/screens/",
+  "/web-app/icons/",
+];
+
+function isStaticAsset(request, url) {
+  return !request.headers.has("range") &&
+    STATIC_PATH_PREFIXES.some((prefix) => url.pathname.startsWith(prefix));
+}
+
+function isCacheableResponse(response) {
+  return response.ok &&
+    response.status === 200 &&
+    (response.type === "basic" || response.type === "default");
+}
+
+async function cacheFirst(request, event) {
+  const cache = await caches.open(CACHE_NAME);
+  const cached = await cache.match(request);
+  if (cached) return cached;
+
+  // A cache miss means this is the first request for the active release. Bypass
+  // the HTTP cache so a newly activated worker cannot repopulate from an older
+  // browser entry that happens to use the same public URL.
+  const response = await fetch(request, { cache: "reload" });
+  if (isCacheableResponse(response)) {
+    event.waitUntil(cache.put(request, response.clone()).catch(() => undefined));
+  }
+  return response;
+}
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(CACHE_VERSION).then((cache) => cache.addAll(APP_SHELL)));
-  self.skipWaiting();
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then((cache) => cache.addAll(APP_SHELL))
+      .then(() => self.skipWaiting()),
+  );
 });
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     Promise.all([
       caches.keys().then((keys) =>
-        Promise.all(keys.filter((key) => key !== CACHE_VERSION).map((key) => caches.delete(key))),
+        Promise.all(
+          keys
+            .filter((key) => key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME)
+            .map((key) => caches.delete(key)),
+        ),
       ),
       self.clients.claim(),
     ]),
@@ -35,7 +78,11 @@ self.addEventListener("fetch", (event) => {
       fetch(request)
         .then((response) => {
           const copy = response.clone();
-          caches.open(CACHE_VERSION).then((cache) => cache.put("/web-app/", copy));
+          event.waitUntil(
+            caches.open(CACHE_NAME)
+              .then((cache) => cache.put("/web-app/", copy))
+              .catch(() => undefined),
+          );
           return response;
         })
         .catch(async () =>
@@ -45,19 +92,8 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  if (url.pathname.startsWith("/_next/static/") || url.pathname.startsWith("/assets/")) {
-    event.respondWith(
-      caches.match(request).then((cached) => {
-        const network = fetch(request).then((response) => {
-          if (response.ok) {
-            const copy = response.clone();
-            caches.open(CACHE_VERSION).then((cache) => cache.put(request, copy));
-          }
-          return response;
-        });
-        return cached || network;
-      }),
-    );
+  if (isStaticAsset(request, url)) {
+    event.respondWith(cacheFirst(request, event));
   }
 });
 

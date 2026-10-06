@@ -7,9 +7,12 @@ export default defineConfig([
   ...nextTs,
   globalIgnores([
     ".next/**",
-    ".build-check/**",
+    ".next-*/**",
+    ".build-check*/**",
     "out/**",
     "build/**",
+    "public/web-app/**",
+    "cloudflare-vote-api/worker-configuration.d.ts",
     "next-env.d.ts",
   ]),
 ]);

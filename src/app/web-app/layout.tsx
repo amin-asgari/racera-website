@@ -5,6 +5,39 @@ export const metadata: Metadata = {
   title: "Racera Web App",
   description: "Formula 1 calendar, results, standings and race reminders from Racera.",
   applicationName: "Racera",
+  alternates: {
+    canonical: "/web-app/",
+  },
+  openGraph: {
+    title: "Racera Web App",
+    description: "Formula 1 calendar, results, standings and race reminders from Racera.",
+    type: "website",
+    siteName: "Racera",
+    url: "/web-app/",
+    locale: "en_US",
+    images: [
+      {
+        url: "/assets/open-graph/OpenGraph_webApp.png",
+        width: 1200,
+        height: 630,
+        alt: "Racera Web App",
+        type: "image/png",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Racera Web App",
+    description: "Formula 1 calendar, results, standings and race reminders from Racera.",
+    images: [
+      {
+        url: "/assets/open-graph/OpenGraph_webApp.png",
+        width: 1200,
+        height: 630,
+        alt: "Racera Web App",
+      },
+    ],
+  },
   manifest: "/web-app/manifest.webmanifest",
   appleWebApp: {
     capable: true,
