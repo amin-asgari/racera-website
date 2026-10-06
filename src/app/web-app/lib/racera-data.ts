@@ -359,14 +359,12 @@ export async function loadBundle<T>(path: BundlePath, force = false): Promise<T>
 }
 
 export async function loadCoreData() {
-  const [sessions, drivers, teams, driverProfiles, constructorProfiles] = await Promise.all([
+  const [sessions, drivers, teams] = await Promise.all([
     loadBundle<Session[]>(BUNDLES.sessions),
     loadBundle<DriverStanding[]>(BUNDLES.standings),
     loadBundle<TeamStanding[]>(BUNDLES.constructorStandings),
-    loadBundle<DriverProfile[]>(BUNDLES.driverProfiles),
-    loadBundle<ConstructorProfile[]>(BUNDLES.constructorProfiles),
   ]);
-  return { sessions, drivers, teams, driverProfiles, constructorProfiles };
+  return { sessions, drivers, teams };
 }
 
 export function buildWeekends(sessions: Session[], now = new Date()): Weekend[] {
@@ -415,12 +413,15 @@ export function buildWeekends(sessions: Session[], now = new Date()): Weekend[] 
 export function assetUrl(value?: string | null) {
   if (!value) return "";
   if (/^https?:\/\//i.test(value)) return value;
-  // Keep the CDN/database asset path verbatim. The Flutter app deliberately
-  // uses the supplied PNG/SVG artwork (including transparent PNGs) and the
-  // web app must render that same source rather than silently swapping in a
-  // recompressed derivative.
   const clean = value.replace(/^\/+/, "");
-  return `/${clean}`;
+  const match = clean.match(/^([^?#]+)([?#].*)?$/);
+  const pathname = match?.[1] || clean;
+  const suffix = match?.[2] || "";
+  const halfCarMatch = pathname.match(/^assets\/cars_image\/([^/]+_half)\.png$/i);
+  if (halfCarMatch) return `/assets/half_car_images/${halfCarMatch[1]}.webp${suffix}`;
+  const usesWebpAsset = /^assets\/(?:cars_image|drivers_headshot|drivers_number|drivers_profile_pic|half_car_images|track_info_images)\//i.test(pathname);
+  const resolvedPath = usesWebpAsset ? pathname.replace(/\.png$/i, ".webp") : pathname;
+  return `/${resolvedPath}${suffix}`;
 }
 
 export function safeHex(value?: string | null, fallback = "#ff3b30") {

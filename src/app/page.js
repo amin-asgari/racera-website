@@ -19,7 +19,7 @@ const features = [
     description:
       "Move from the season calendar to a complete weekend in one tap. See practice, qualifying, sprint and race sessions in your local time — or switch to the circuit's host time.",
     bullets: ["Local & host time", "Session-by-session results", "Circuit details"],
-    screen: "/screens/calendar.png",
+    screen: "/screens/calendar.webp",
     alt: "Racera race calendar showing upcoming Formula 1 events",
     accent: "red",
   },
@@ -30,9 +30,9 @@ const features = [
     description:
       "Follow drivers and constructors through the season. Open any profile for points, wins, podiums, poles, fastest laps and a race-by-race performance history.",
     bullets: ["Driver standings", "Team standings", "Deep season stats"],
-    screen: "/screens/drivers.png",
+    screen: "/screens/drivers.webp",
     alt: "Racera Formula 1 driver standings",
-    secondaryScreen: "/screens/team-standings.png",
+    secondaryScreen: "/screens/team-standings.webp",
     secondaryAlt: "Racera Formula 1 team standings",
     accent: "teal",
   },
@@ -43,7 +43,7 @@ const features = [
     description:
       "Catch the latest session winner, podium and complete classification from the home screen. Race time, finishing position and points stay clear at a glance.",
     bullets: ["Session winners", "Full classification", "Race-by-race points"],
-    screen: "/screens/home.png",
+    screen: "/screens/home.webp",
     alt: "Racera home screen showing the next race and latest race results",
     accent: "blue",
   },
@@ -102,7 +102,7 @@ function Header() {
   return (
     <header className="site-header">
       <a className="brand-link" href="#top" aria-label="Racera home">
-        <Image src="/brand/racera.svg" width={148} height={31} alt="Racera" priority />
+        <Image src="/brand/racera.svg" width={148} height={31} alt="Racera" loading="eager" />
       </a>
       <nav aria-label="Primary navigation">
         <a href="#series">Series</a>
@@ -159,22 +159,23 @@ function Hero() {
         </div>
         <div className="phone phone-back">
           <Image
-            src="/screens/drivers.png"
+            src="/screens/drivers.webp"
             alt="Racera driver standings screen"
             fill
             sizes="(max-width: 800px) 44vw, 280px"
             className="phone-image"
-            priority
+            loading="eager"
+            fetchPriority="high"
           />
         </div>
         <div className="phone phone-front">
           <Image
-            src="/screens/home.png"
+            src="/screens/home.webp"
             alt="Racera home screen"
             fill
             sizes="(max-width: 800px) 52vw, 320px"
             className="phone-image"
-            priority
+            preload
           />
         </div>
         <div className="next-race-card floating-card">
@@ -300,7 +301,7 @@ function Widgets() {
           <div className="platform-label"><span>Android</span><b>Home screen</b></div>
           <div className="platform-screen">
             <Image
-              src="/screens/widgets-android.png"
+              src="/screens/widgets-android.webp"
               alt="Racera widgets arranged on an Android home screen"
               fill
               sizes="(max-width: 820px) 44vw, 300px"
@@ -312,7 +313,7 @@ function Widgets() {
           <div className="platform-label"><span>iOS</span><b>Home screen</b></div>
           <div className="platform-screen">
             <Image
-              src="/screens/widgets-ios.png"
+              src="/screens/widgets-ios.webp"
               alt="Racera widgets arranged on an iOS home screen"
               fill
               sizes="(max-width: 820px) 44vw, 300px"

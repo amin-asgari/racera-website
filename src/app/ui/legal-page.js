@@ -190,7 +190,7 @@ export default function LegalPage({ type }) {
     <div className="legal-page">
       <header className="site-header legal-header">
         <Link className="brand-link" href="/" aria-label="Back to Racera home">
-          <Image src="/brand/racera.svg" width={148} height={31} alt="Racera" priority />
+          <Image src="/brand/racera.svg" width={148} height={31} alt="Racera" loading="eager" />
         </Link>
         <span />
         <Link className="header-cta" href="/">Back home</Link>

@@ -11,13 +11,6 @@ export const metadata: Metadata = {
     title: "Racera",
     statusBarStyle: "black-translucent",
   },
-  icons: {
-    icon: [
-      { url: "/web-app/icons/icon-192.png", sizes: "192x192", type: "image/png" },
-      { url: "/web-app/icons/icon-512.png", sizes: "512x512", type: "image/png" },
-    ],
-    apple: [{ url: "/web-app/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
-  },
   other: {
     "mobile-web-app-capable": "yes",
   },

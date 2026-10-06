@@ -1,4 +1,4 @@
-const CACHE_VERSION = "racera-next-v1";
+const CACHE_VERSION = "racera-next-v2";
 const APP_SHELL = [
   "/web-app/",
   "/web-app/manifest.webmanifest",

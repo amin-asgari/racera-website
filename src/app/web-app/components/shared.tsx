@@ -8,11 +8,13 @@ export function Asset({
   alt,
   className,
   eager = false,
+  fetchPriority = "auto",
 }: {
   src?: string | null;
   alt: string;
   className?: string;
   eager?: boolean;
+  fetchPriority?: "high" | "low" | "auto";
 }) {
   if (!src) return null;
   return (
@@ -23,6 +25,7 @@ export function Asset({
       alt={alt}
       className={className}
       loading={eager ? "eager" : "lazy"}
+      fetchPriority={fetchPriority}
       decoding="async"
     />
   );

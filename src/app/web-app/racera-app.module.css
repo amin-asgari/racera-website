@@ -92,8 +92,16 @@
 .headerLogo {
   width: 132px;
   height: 38px;
+  display: block;
+  overflow: hidden;
   object-fit: contain;
   object-position: left center;
+}
+
+.headerLogo svg {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
 }
 
 .headerActions,
@@ -468,7 +476,7 @@
 .statusPattern {
   z-index: -2;
   opacity: 0.065;
-  background: url("/assets/backgrounds/F1Background.png") top center / 100% auto no-repeat;
+  background: url("/assets/backgrounds/F1Background.webp") top center / 100% auto no-repeat;
 }
 
 .statusGradient {
@@ -647,7 +655,7 @@
   position: absolute;
   inset: 0;
   opacity: 0.065;
-  background: url("/assets/backgrounds/F1Background.png") top center / 100% auto no-repeat;
+  background: url("/assets/backgrounds/F1Background.webp") top center / 100% auto no-repeat;
 }
 
 .winnerWord {
@@ -867,7 +875,10 @@
 }
 
 /* Calendar */
-.calendarList,
+.calendarList {
+  padding: 12px 0;
+}
+
 .standingsList {
   padding: 12px 0 100px;
 }
@@ -905,8 +916,8 @@
 .cardPattern {
   opacity: 0.6;
   background: #c90000;
-  -webkit-mask: url("/assets/backgrounds/constructor_standings_background.png") right center / auto 125% no-repeat;
-  mask: url("/assets/backgrounds/constructor_standings_background.png") right center / auto 125% no-repeat;
+  -webkit-mask: url("/assets/backgrounds/additional_background.webp") right center / auto 125% no-repeat;
+  mask: url("/assets/backgrounds/additional_background.webp") right center / auto 125% no-repeat;
 }
 
 .cardGradient {
@@ -1202,8 +1213,8 @@
   width: calc(500px * var(--standing-scale));
   opacity: 1;
   background: var(--accent);
-  -webkit-mask: url("/assets/backgrounds/f1_standings_background.png") right center / 100% 100% no-repeat;
-  mask: url("/assets/backgrounds/f1_standings_background.png") right center / 100% 100% no-repeat;
+  -webkit-mask: url("/assets/backgrounds/additional_background.webp") right center / 100% 100% no-repeat;
+  mask: url("/assets/backgrounds/additional_background.webp") right center / 100% 100% no-repeat;
 }
 
 .rankPanel {
@@ -1356,8 +1367,8 @@
 .teamStandingCard .standingPattern {
   width: calc(547.73px * var(--standing-scale));
   background: var(--accent);
-  -webkit-mask: url("/assets/backgrounds/constructor_standings_background.png") right center / 100% 100% no-repeat;
-  mask: url("/assets/backgrounds/constructor_standings_background.png") right center / 100% 100% no-repeat;
+  -webkit-mask: url("/assets/backgrounds/additional_background.webp") right center / 100% 100% no-repeat;
+  mask: url("/assets/backgrounds/additional_background.webp") right center / 100% 100% no-repeat;
 }
 
 .monoLogo {
@@ -1425,8 +1436,8 @@
   inset: 0 0 0 auto;
   width: 100.765cqw;
   background: var(--accent);
-  -webkit-mask: url("/assets/backgrounds/f1_standings_background.png") right center / cover no-repeat;
-  mask: url("/assets/backgrounds/f1_standings_background.png") right center / cover no-repeat;
+  -webkit-mask: url("/assets/backgrounds/additional_background.webp") right center / cover no-repeat;
+  mask: url("/assets/backgrounds/additional_background.webp") right center / cover no-repeat;
 }
 
 .profileNumber {
@@ -1557,8 +1568,8 @@
   height: 24.209cqw;
   opacity: 0.4;
   background: var(--card-bg);
-  -webkit-mask: url("/assets/backgrounds/constructor_banner_background.png") center / 100% 100% no-repeat;
-  mask: url("/assets/backgrounds/constructor_banner_background.png") center / 100% 100% no-repeat;
+  -webkit-mask: url("/assets/backgrounds/constructor_banner_background.webp") center / 100% 100% no-repeat;
+  mask: url("/assets/backgrounds/constructor_banner_background.webp") center / 100% 100% no-repeat;
 }
 
 .constructorCar {
@@ -3111,17 +3122,20 @@
     padding-bottom: 60px;
   }
 
-  .calendarList,
   .standingsList,
   .settingsPage,
   .settingsDetail {
     padding-bottom: 50px;
   }
 
+  .calendarList {
+    padding-bottom: 12px;
+  }
+
 }
 
 @media (min-width: 1481px) {
-  :global(body) {
+  :global(body):has(.appRoot) {
     background: radial-gradient(circle at 50% 0%, #211012 0%, #08070b 55%);
   }
 

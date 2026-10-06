@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -8,6 +9,7 @@ import {
   type CSSProperties,
   type ReactNode,
 } from "react";
+import { preload } from "react-dom";
 import styles from "./racera-app.module.css";
 import {
   BUNDLES,
@@ -36,6 +38,7 @@ import {
   type InstallPromptEvent,
 } from "./lib/pwa";
 import { Icon } from "./components/icons";
+import { RaceraMotionLogo } from "./components/racera-motion-logo";
 import { AppHeader, Asset, ErrorState, LoadingState, Modal, SettingsPanel, Toast } from "./components/shared";
 
 type CoreData = Awaited<ReturnType<typeof loadCoreData>>;
@@ -45,6 +48,13 @@ type VoteSeriesId = "motogp" | "wec" | "nascar" | "gt" | "wrc";
 const VOTE_API_URL =
   process.env.NEXT_PUBLIC_VOTE_API_URL ||
   "https://racera-vote-api.amin-asgari-work.workers.dev/v1/votes";
+
+const LOCAL_TIME_STORAGE_KEY = "racera.localTime";
+const BACKGROUNDS = {
+  home: "/assets/backgrounds/F1Background.webp",
+  standings: "/assets/backgrounds/additional_background.webp",
+  constructor: "/assets/backgrounds/constructor_banner_background.webp",
+} as const;
 
 const SERIES: Array<{ id: VoteSeriesId; name: string; icon: string }> = [
   { id: "motogp", name: "MotoGP", icon: "assets/icons/MotoGP.svg" },
@@ -170,8 +180,20 @@ function isShellRoute(route: string) {
   return PRIMARY_TABS.some((item) => item.route === route);
 }
 
+function preloadRouteBackground(route: string) {
+  const href = route === "/home"
+    ? BACKGROUNDS.home
+    : route === "/calendar" || route === "/standings" || route.startsWith("/driver/")
+      ? BACKGROUNDS.standings
+      : route.startsWith("/constructor/")
+        ? BACKGROUNDS.constructor
+        : null;
+  if (href) preload(href, { as: "image", type: "image/webp", fetchPriority: "high" });
+}
+
 export function RaceraApp() {
   const route = useHashRoute();
+  preloadRouteBackground(route);
   const [core, setCore] = useState<CoreData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
@@ -179,8 +201,24 @@ export function RaceraApp() {
   const [installOpen, setInstallOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [navVisible, setNavVisible] = useState(true);
+  const [localTime, setLocalTime] = useState(false);
   const sectionStart = useRef<number | null>(null);
   const previousRoute = useRef(route);
+
+  useEffect(() => {
+    const syncPreference = () => setLocalTime(localStorage.getItem(LOCAL_TIME_STORAGE_KEY) === "1");
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === LOCAL_TIME_STORAGE_KEY) syncPreference();
+    };
+    queueMicrotask(syncPreference);
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
+  const changeTime = useCallback((value: boolean) => {
+    setLocalTime(value);
+    localStorage.setItem(LOCAL_TIME_STORAGE_KEY, value ? "1" : "0");
+  }, []);
 
   useEffect(() => {
     sectionStart.current = Date.now();
@@ -280,7 +318,7 @@ export function RaceraApp() {
       <a className={styles.skipLink} href="#racera-main">Skip to content</a>
       {shell && <DesktopNavigation active={tab} />}
       <main id="racera-main" className={styles.appMain}>
-        <RouteView route={route} core={core} showToast={setToast} openInstall={() => setInstallOpen(true)} />
+        <RouteView route={route} core={core} localTime={localTime} changeTime={changeTime} showToast={setToast} openInstall={() => setInstallOpen(true)} />
       </main>
       {shell && <BottomNavigation active={tab} visible={navVisible} />}
       {installOpen && (
@@ -291,19 +329,21 @@ export function RaceraApp() {
   );
 }
 
-function RouteView({ route, core, showToast, openInstall }: {
+function RouteView({ route, core, localTime, changeTime, showToast, openInstall }: {
   route: string;
   core: CoreData;
+  localTime: boolean;
+  changeTime: (value: boolean) => void;
   showToast: (message: string) => void;
   openInstall: () => void;
 }) {
   if (route === "/home") return <Home core={core} />;
-  if (route === "/calendar") return <Calendar core={core} />;
+  if (route === "/calendar") return <Calendar core={core} localTime={localTime} changeTime={changeTime} />;
   if (route === "/standings") return <Standings core={core} />;
   if (route === "/settings") return <Settings />;
-  if (route.startsWith("/driver/")) return <DriverDetail number={Number(route.split("/")[2])} core={core} />;
-  if (route.startsWith("/constructor/")) return <ConstructorDetail slug={decodeURIComponent(route.split("/")[2] || "")} core={core} />;
-  if (route.startsWith("/circuit/")) return <CircuitDetail keyValue={Number(route.split("/")[2])} core={core} />;
+  if (route.startsWith("/driver/")) return <DriverDetail number={Number(route.split("/")[2])} />;
+  if (route.startsWith("/constructor/")) return <ConstructorDetail slug={decodeURIComponent(route.split("/")[2] || "")} />;
+  if (route.startsWith("/circuit/")) return <CircuitDetail keyValue={Number(route.split("/")[2])} core={core} localTime={localTime} changeTime={changeTime} />;
   if (route === "/settings/racing-series") return <RacingSeries />;
   if (route === "/settings/racing-series/vote") return <VotePage showToast={showToast} />;
   if (route === "/settings/notifications") return <Notifications sessions={core.sessions} showToast={showToast} openInstall={openInstall} />;
@@ -372,41 +412,57 @@ function SplashScreen() {
 }
 
 function Home({ core }: { core: CoreData }) {
+  return (
+    <>
+      <AppHeader
+        title={<RaceraMotionLogo className={styles.headerLogo} />}
+        action={<button className={styles.headerIconButton} type="button" onClick={() => navigate("/settings/help-feedback")} aria-label="Tickets"><Asset src="assets/icons/ticket.svg" alt="" /></button>}
+      />
+      <div className={styles.homeFeed}>
+        <HomeStatus sessions={core.sessions} />
+        <HomeResultsFeed sessions={core.sessions} teams={core.teams} />
+      </div>
+    </>
+  );
+}
+
+function HomeStatus({ sessions }: { sessions: Session[] }) {
   const now = useNow();
-  const resultsState = useAsyncBundle<Record<string, SessionResult[]>>(BUNDLES.sessionResults);
   const statusSession = useMemo(() => {
-    const eligible = core.sessions.filter((session) => !session.is_cancelled && !(session.meeting_name || "").toLowerCase().includes("testing"));
+    const eligible = sessions.filter((session) => !session.is_cancelled && !(session.meeting_name || "").toLowerCase().includes("testing"));
     const ongoing = eligible
       .filter((session) => Date.parse(session.date_start) <= now.getTime() && now.getTime() < Date.parse(session.date_end))
       .sort((a, b) => Date.parse(b.date_start) - Date.parse(a.date_start))[0];
     return ongoing
       || eligible.filter((session) => Date.parse(session.date_start) > now.getTime()).sort((a, b) => Date.parse(a.date_start) - Date.parse(b.date_start))[0]
       || null;
-  }, [core.sessions, now]);
-  const completed = useMemo(() => core.sessions
-    .filter((session) => !session.is_cancelled && Date.parse(session.date_end) <= now.getTime())
-    .sort((a, b) => Date.parse(b.date_start) - Date.parse(a.date_start)), [core.sessions, now]);
-  const teamLogos = useMemo(() => Object.fromEntries(core.teams.map((team) => [team.team_name, team.team_logo])), [core.teams]);
+  }, [sessions, now]);
+
+  return statusSession ? <HomeStatusCard session={statusSession} now={now} /> : null;
+}
+
+function HomeResultsFeed({ sessions, teams }: { sessions: Session[]; teams: CoreData["teams"] }) {
+  const resultsState = useAsyncBundle<Record<string, SessionResult[]>>(BUNDLES.sessionResults);
+  const now = useNow(60_000);
+  const completed = useMemo(() => {
+    return sessions
+      .filter((session) => !session.is_cancelled && Date.parse(session.date_end) <= now.getTime())
+      .sort((a, b) => Date.parse(b.date_start) - Date.parse(a.date_start));
+  }, [now, sessions]);
+  const teamLogos = useMemo(() => Object.fromEntries(teams.map((team) => [team.team_name, team.team_logo])), [teams]);
 
   return (
     <>
-      <AppHeader
-        title={<Asset src="assets/icons/racera.svg" alt="Racera" className={styles.headerLogo} eager />}
-        action={<button className={styles.headerIconButton} type="button" onClick={() => navigate("/settings/help-feedback")} aria-label="Tickets"><Asset src="assets/icons/ticket.svg" alt="" /></button>}
-      />
-      <div className={styles.homeFeed}>
-        {statusSession && <HomeStatusCard session={statusSession} now={now} />}
-        {resultsState.loading && <LoadingState label="Loading session results" />}
-        {!resultsState.loading && completed.map((session) => {
-          const results = resultsState.data?.[String(session.session_key)] || [];
-          return (
-            <div key={session.session_key} className={styles.feedGroup}>
-              {isMainRace(session) && results.length > 0 && <WinnerPost session={session} results={results} />}
-              {results.length > 0 && <SessionResultPost session={session} results={results} teamLogos={teamLogos} />}
-            </div>
-          );
-        })}
-      </div>
+      {resultsState.loading && <LoadingState label="Loading session results" />}
+      {!resultsState.loading && completed.map((session) => {
+        const results = resultsState.data?.[String(session.session_key)] || [];
+        return (
+          <div key={session.session_key} className={styles.feedGroup}>
+            {isMainRace(session) && results.length > 0 && <WinnerPost session={session} results={results} />}
+            {results.length > 0 && <SessionResultPost session={session} results={results} teamLogos={teamLogos} />}
+          </div>
+        );
+      })}
     </>
   );
 }
@@ -416,7 +472,7 @@ function HomeStatusCard({ session, now }: { session: Session; now: Date }) {
   const remaining = countdownParts(new Date(session.date_start), now);
   return (
     <section className={styles.homeStatusCard} aria-label={`${ongoing ? "The Session is Ongoing" : "Upcoming Session"}: ${session.meeting_name || session.country_name}`}>
-      <Asset src={session.country_banner} alt="" className={styles.statusCountryBackdrop} eager />
+      <Asset src={session.country_banner} alt="" className={styles.statusCountryBackdrop} eager fetchPriority="high" />
       <div className={styles.statusPattern} />
       <div className={styles.statusGradient} />
       {ongoing ? (
@@ -484,60 +540,55 @@ function ResultTable({ session, results, teamLogos }: { session: Session; result
   );
 }
 
-function Calendar({ core }: { core: CoreData }) {
-  const [localTime, setLocalTime] = useState(false);
-  useEffect(() => {
-    queueMicrotask(() => setLocalTime(localStorage.getItem("racera.localTime") === "1"));
-  }, []);
-  const now = useNow();
+function Calendar({ core, localTime, changeTime }: { core: CoreData; localTime: boolean; changeTime: (value: boolean) => void }) {
+  const now = useNow(60_000);
+  const listRef = useRef<HTMLDivElement>(null);
   const weekends = useMemo(() => buildWeekends(core.sessions, now), [core.sessions, now]);
   const featuredIndex = weekends.findIndex((weekend) => weekend.status === "upcoming" || weekend.status === "ongoing");
   useEffect(() => {
     if (featuredIndex < 0) return;
-    // Flutter's CalendarPage keeps round order intact and only moves the
-    // initial viewport to the current/next weekend. Reproduce that behavior
-    // without reordering the data used by the cards.
-    const itemTop = featuredIndex * 105 + 10;
-    const id = window.setTimeout(() => {
-      // Keep the card just below the 75px sticky app header, matching the
-      // Flutter scroll view's content viewport rather than hiding its title.
-      window.scrollTo({ top: Math.max(0, itemTop - 75), behavior: "auto" });
-    }, 40);
-    return () => window.clearTimeout(id);
+    const frame = window.requestAnimationFrame(() => {
+      const featuredCard = listRef.current?.querySelector<HTMLElement>("[data-calendar-featured]");
+      if (!featuredCard) return;
+      const requestedTop = window.scrollY + featuredCard.getBoundingClientRect().top - 75;
+      const maxTop = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+      window.scrollTo({ top: Math.min(Math.max(0, requestedTop), maxTop), behavior: "auto" });
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, [featuredIndex]);
-  const changeTime = (value: boolean) => {
-    setLocalTime(value);
-    localStorage.setItem("racera.localTime", value ? "1" : "0");
-  };
   return (
     <>
-      <AppHeader title={localTime ? "Local Time" : "Host Time"} action={<div className={styles.headerControls}><button type="button" className={`${styles.toggle} ${localTime ? styles.toggleOn : ""}`} onClick={() => changeTime(!localTime)} aria-label="Use local time" aria-pressed={localTime}><i /></button><SeriesFilterButton /></div>} />
-      <div className={styles.calendarList}>
-        {weekends.map((weekend, index) => <CircuitCard key={weekend.meetingKey} weekend={weekend} localTime={localTime} featured={index === featuredIndex} now={now} />)}
+      <AppHeader title={localTime ? "Local Time" : "Host Time"} action={<div className={styles.headerControls}><button type="button" className={`${styles.toggle} ${localTime ? styles.toggleOn : ""}`} onClick={() => changeTime(!localTime)} aria-label={localTime ? "Use host time" : "Use local time"} aria-pressed={localTime}><i /></button><SeriesFilterButton /></div>} />
+      <div ref={listRef} className={styles.calendarList}>
+        {weekends.map((weekend, index) => <CircuitCard key={weekend.meetingKey} weekend={weekend} localTime={localTime} featured={index === featuredIndex} />)}
       </div>
     </>
   );
 }
 
-function CircuitCard({ weekend, localTime, featured, now }: { weekend: Weekend; localTime: boolean; featured: boolean; now: Date }) {
+function CircuitCard({ weekend, localTime, featured }: { weekend: Weekend; localTime: boolean; featured: boolean }) {
   const session = weekend.representative;
   const next = weekend.nextSession;
-  const remaining = countdownParts(next ? new Date(next.date_start) : now, now);
   const disabled = weekend.status === "completed" || weekend.status === "cancelled";
   return (
-    <button type="button" className={`${styles.circuitCard} ${featured ? styles.circuitCardFeatured : ""} ${disabled ? styles.cardDesaturated : ""}`} onClick={() => navigate(`/circuit/${weekend.circuitKey}`)}>
+    <button type="button" data-calendar-featured={featured ? "true" : undefined} className={`${styles.circuitCard} ${featured ? styles.circuitCardFeatured : ""} ${disabled ? styles.cardDesaturated : ""}`} onClick={() => navigate(`/circuit/${weekend.circuitKey}`)}>
       <span className={styles.cardPattern} />
       <span className={styles.cardGradient} />
-      <Asset src={session.circuit_path} alt="" className={styles.calendarTrack} />
+      <Asset src={session.circuit_path} alt="" className={styles.calendarTrack} eager={featured} fetchPriority={featured ? "high" : "auto"} />
       <span className={styles.roundPanel}><small>RND</small><b>{weekend.round}</b></span>
       <span className={styles.circuitIdentity}><span className={styles.circuitTitleRow}><strong>{session.circuit_short_name}</strong>{weekend.hasSprint && <span className={styles.sprintBadge}>SPRINT</span>}</span><small>Formula 1</small></span>
       <time className={styles.dateBadge}>{formatWeekendRange(weekend, localTime)}</time>
       {featured && next && <span className={styles.nextSessionBlock}><small>Next Session:</small><strong>{next.session_name.toUpperCase()}</strong><time>{formatTimeRange(next, localTime)}</time></span>}
-      {featured && next && <CountdownRow parts={remaining} compact />}
+      {featured && next && <FeaturedCountdown dateStart={next.date_start} />}
       <span className={styles.countryRow}><Asset src={session.country_flag} alt="" /><i /><strong>{session.country_name}</strong></span>
       <span className={styles.cardStatus}>{capitalize(weekend.status)}<i /></span>
     </button>
   );
+}
+
+function FeaturedCountdown({ dateStart }: { dateStart: string }) {
+  const now = useNow();
+  return <CountdownRow parts={countdownParts(new Date(dateStart), now)} compact />;
 }
 
 function Standings({ core }: { core: CoreData }) {
@@ -560,13 +611,13 @@ function Standings({ core }: { core: CoreData }) {
       <div className={styles.standingsList}>
         {mode === "drivers" ? core.drivers.map((driver) => (
           <button type="button" key={driver.driver_number ?? driver.rank} className={`${styles.standingCard} ${driver.rank === 1 ? styles.firstStanding : ""}`} onClick={() => driver.driver_number && navigate(`/driver/${driver.driver_number}`)} style={{ "--card-bg": safeHex(driver.background_colour, "#0c0c0c"), "--accent": safeHex(driver.primary_colour, "#777777") } as CSSProperties}>
-            <span className={styles.standingPattern} /><Asset src={driver.number_logo} alt="" className={styles.numberLogo} eager={driver.rank <= 5} /><Asset src={driver.headshot_pic} alt="" className={styles.standingHeadshot} eager={driver.rank <= 5} />
+            <span className={styles.standingPattern} /><Asset src={driver.number_logo} alt="" className={styles.numberLogo} eager={driver.rank <= 5} fetchPriority={driver.rank <= 5 ? "high" : "auto"} /><Asset src={driver.headshot_pic} alt="" className={styles.standingHeadshot} eager={driver.rank <= 5} fetchPriority="low" />
             <b className={styles.rankPanel}>{driver.rank}</b>
             <span className={styles.standingCopy}><strong><i>{driver.first_name}</i> {driver.last_name}</strong><small>{driver.team_name}</small><em><b>{Math.round(driver.points)}</b><small>Pts</small></em><span><Asset src={driver.country_flag} alt="" eager={driver.rank <= 5} /><i />{driver.country_name}</span></span>
           </button>
         )) : core.teams.map((team) => (
           <button type="button" key={team.slug_name} className={`${styles.standingCard} ${styles.teamStandingCard} ${team.rank === 1 ? styles.firstStanding : ""}`} onClick={() => navigate(`/constructor/${team.slug_name}`)} style={{ "--card-bg": safeHex(team.background_colour, "#0c0c0c"), "--accent": safeHex(team.primary_colour, "#777777") } as CSSProperties}>
-            <Asset src={team.team_monochrome_logo} alt="" className={styles.monoLogo} eager={team.rank <= 5} /><span className={styles.standingPattern} /><Asset src={team.half_car_pic} alt="" className={styles.halfCar} eager={team.rank <= 5} />
+            <Asset src={team.team_monochrome_logo} alt="" className={styles.monoLogo} eager={team.rank <= 5} fetchPriority={team.rank <= 5 ? "high" : "auto"} /><span className={styles.standingPattern} /><Asset src={team.half_car_pic} alt="" className={styles.halfCar} eager={team.rank <= 5} fetchPriority="low" />
             <b className={styles.rankPanel}>{team.rank}</b>
             <span className={styles.standingCopy}><strong>{team.team_name}</strong><small>{team.driver_acronyms?.join(" | ")}</small><em><b>{Math.round(team.points)}</b><small>Pts</small></em><span><Asset src={team.country_flag} alt="" eager={team.rank <= 5} /><i />{team.country_name}</span></span>
           </button>
@@ -576,16 +627,22 @@ function Standings({ core }: { core: CoreData }) {
   );
 }
 
-function DriverDetail({ number, core }: { number: number; core: CoreData }) {
-  const profile = core.driverProfiles.find((item) => item.profile.driver_number === number);
+function DriverDetail({ number }: { number: number }) {
+  const profilesState = useAsyncBundle<DriverProfile[]>(BUNDLES.driverProfiles);
+  const profile = profilesState.data?.find((item) => item.profile.driver_number === number);
   const resultsState = useAsyncBundle<Record<string, RaceResult[]>>(profile ? BUNDLES.driverResults : null);
+  if (profilesState.loading) return <LoadingState label="Loading driver profile" />;
+  if (profilesState.error) return <ErrorState message={profilesState.error} />;
   if (!profile) return <NotFound />;
   return <ProfileDetail type="driver" profile={profile} results={resultsState.data?.[String(number)] || []} loading={resultsState.loading} />;
 }
 
-function ConstructorDetail({ slug, core }: { slug: string; core: CoreData }) {
-  const profile = core.constructorProfiles.find((item) => item.profile.slug_name === slug);
+function ConstructorDetail({ slug }: { slug: string }) {
+  const profilesState = useAsyncBundle<ConstructorProfile[]>(BUNDLES.constructorProfiles);
+  const profile = profilesState.data?.find((item) => item.profile.slug_name === slug);
   const resultsState = useAsyncBundle<Record<string, RaceResult[]>>(profile ? BUNDLES.constructorResults : null);
+  if (profilesState.loading) return <LoadingState label="Loading team profile" />;
+  if (profilesState.error) return <ErrorState message={profilesState.error} />;
   if (!profile) return <NotFound />;
   return <ProfileDetail type="team" profile={profile} results={resultsState.data?.[slug] || []} loading={resultsState.loading} />;
 }
@@ -624,9 +681,9 @@ function DriverProfileBanner({ profile }: { profile: DriverProfile }) {
   const family = rest.join(" ") || first;
   return (
     <section className={styles.driverBanner} style={{ "--card-bg": safeHex(data.background_colour, "#0c0c0c"), "--accent": safeHex(data.primary_colour, "#777777") } as CSSProperties}>
-      <Asset src={data.number_logo} alt="" className={styles.profileNumber} />
+      <Asset src={data.number_logo} alt="" className={styles.profileNumber} eager fetchPriority="high" />
       <span className={styles.profilePattern} />
-      <Asset src={data.headshot_pic} alt={data.full_name} className={styles.driverPortrait} eager />
+      <Asset src={data.headshot_pic} alt={data.full_name} className={styles.driverPortrait} eager fetchPriority="low" />
       <Asset src="assets/backgrounds/line2.svg" alt="" className={styles.bannerLineTop} />
       <Asset src="assets/backgrounds/line1.svg" alt="" className={styles.bannerLineBottom} />
       <div className={styles.driverBannerName}><span>{first}</span><strong>{family.toUpperCase()}</strong><p><Asset src={data.country_flag} alt="" />{data.country_name}<i />{data.team_name}<i />{data.driver_number}</p></div>
@@ -638,11 +695,11 @@ function ConstructorProfileBanner({ profile }: { profile: ConstructorProfile }) 
   const data = profile.profile;
   return (
     <section className={styles.constructorBanner} style={{ "--card-bg": safeHex(data.background_colour, "#0c0c0c"), "--accent": safeHex(data.primary_colour, "#777777") } as CSSProperties}>
+      <Asset src={data.team_logo} alt="" className={styles.constructorLogo} eager fetchPriority="high" />
       <span className={styles.constructorPattern} />
-      <Asset src={data.car_pic} alt={`${data.team_name} car`} className={styles.constructorCar} eager />
+      <Asset src={data.car_pic} alt={`${data.team_name} car`} className={styles.constructorCar} eager fetchPriority="low" />
       <div className={styles.constructorNameBand}><Asset src="assets/backgrounds/line3.svg" alt="" /><strong>{data.team_name.toUpperCase()}</strong><Asset src="assets/backgrounds/line4.svg" alt="" /></div>
       <p className={styles.constructorDetails}><Asset src={data.country_flag} alt="" />{data.country_name}{data.driver_acronyms?.map((acronym) => <span key={acronym}><i />{acronym.toUpperCase()}</span>)}</p>
-      <Asset src={data.team_logo} alt="" className={styles.constructorLogo} />
     </section>
   );
 }
@@ -680,10 +737,9 @@ function RaceResultCard({ title, results, loading, showPosition }: { title: stri
   );
 }
 
-function CircuitDetail({ keyValue, core }: { keyValue: number; core: CoreData }) {
+function CircuitDetail({ keyValue, core, localTime, changeTime }: { keyValue: number; core: CoreData; localTime: boolean; changeTime: (value: boolean) => void }) {
   const weekend = useMemo(() => buildWeekends(core.sessions).find((item) => item.circuitKey === keyValue), [core.sessions, keyValue]);
   const resultsState = useAsyncBundle<Record<string, SessionResult[]>>(weekend ? BUNDLES.sessionResults : null);
-  const [localTime, setLocalTime] = useState(false);
   const [expanded, setExpanded] = useState<number | null>(null);
   useProfileEngagement("circuit", weekend ? String(weekend.circuitKey) : null, weekend?.representative.circuit_short_name || "Circuit", weekend?.sessions.length || 0);
   if (!weekend) return <NotFound />;
@@ -691,7 +747,7 @@ function CircuitDetail({ keyValue, core }: { keyValue: number; core: CoreData })
   const teamLogos = Object.fromEntries(core.teams.map((team) => [team.team_name, team.team_logo]));
   return (
     <>
-      <AppHeader title={data.circuit_short_name} back={goBack} action={<button type="button" className={`${styles.toggle} ${localTime ? styles.toggleOn : ""}`} onClick={() => setLocalTime((value) => !value)} aria-label="Use local time" aria-pressed={localTime}><i /></button>} />
+      <AppHeader title={data.circuit_short_name} back={goBack} action={<button type="button" className={`${styles.toggle} ${localTime ? styles.toggleOn : ""}`} onClick={() => changeTime(!localTime)} aria-label={localTime ? "Use host time" : "Use local time"} aria-pressed={localTime}><i /></button>} />
       <div className={styles.circuitDetail}>
         <CircuitHero weekend={weekend} localTime={localTime} />
         <CircuitStatus weekend={weekend} results={resultsState.data} />
@@ -741,7 +797,7 @@ function CircuitHero({ weekend, localTime }: { weekend: Weekend; localTime: bool
   const data = weekend.representative;
   return (
     <section className={styles.circuitHeroExact}>
-      <Asset src={data.country_banner} alt="" className={styles.circuitBackdrop} eager /><span className={styles.circuitHeroGradient} />
+      <Asset src={data.country_banner} alt="" className={styles.circuitBackdrop} eager fetchPriority="high" /><span className={styles.circuitHeroGradient} />
       <span className={styles.heroFlag}><Asset src={data.country_flag} alt="" /></span>
       <strong>{(data.meeting_name || data.country_name).toUpperCase()}</strong><h1>{data.circuit_short_name}</h1>
       <div>{weekend.hasSprint && <span className={styles.heroSprint}>SPRINT</span>}<time className={styles.heroDate}>{formatWeekendRange(weekend, localTime)}</time><span className={styles.heroRound}>RND | {weekend.round}</span><span className={styles.heroSport}>Formula 1</span></div>
